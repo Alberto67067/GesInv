@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport-fit=cover: aprovecha toda la pantalla en iPhone con notch -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>InventarioPro · Gestión de Inventario</title>
+  <meta name="description" content="Sistema web para la gestión de inventario: productos, stock, movimientos, proveedores y reportes.">
+
+  <!-- ===================== Aplicación web instalable (PWA) ================= -->
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="color-scheme" content="light dark">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+
+  <!-- Aplica el tema guardado antes del primer pintado (evita destellos) -->
+  <script>
+    (function () {
+      try {
+        var bruto = localStorage.getItem('inventariopro.db.v1');
+        var tema = bruto ? ((JSON.parse(bruto).empresa || {}).tema) : 'light';
+        tema = tema === 'dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', tema);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', tema === 'dark' ? '#0f172b' : '#f4f6fb');
+      } catch (e) { /* primer arranque */ }
+    })();
+  </script>
+
+  <!-- iOS: modo aplicación a pantalla completa -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Inventario">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Cpath d='M8 12l8-4.5L24 12v8l-8 4.5L8 20z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M8 12l8 4.5 8-4.5M16 16.5V24' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- ===================== BARRA LATERAL ===================== -->
+    <aside class="sidebar" id="sidebar" aria-label="Navegación principal">
+      <div class="brand">
+        <span class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/>
+          </svg>
+        </span>
+        <span class="brand-text">
+          <strong>InventarioPro</strong>
+          <small id="brandEmpresa">Mi Empresa</small>
+        </span>
+      </div>
+
+      <nav class="nav" id="nav">
+        <p class="nav-label">General</p>
+        <a class="nav-item" href="#/dashboard" data-route="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>
+          <span>Panel</span>
+        </a>
+        <a class="nav-item" href="#/productos" data-route="productos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg>
+          <span>Productos</span>
+          <em class="nav-count" id="navCountProductos">0</em>
+        </a>
+        <a class="nav-item" href="#/movimientos" data-route="movimientos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3.5-3.5"/><path d="M17 17H6l3.5 3.5"/></svg>
+          <span>Movimientos</span>
+        </a>
+
+        <p class="nav-label">Catálogos</p>
+        <a class="nav-item" href="#/categorias" data-route="categorias">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0l-7.2-7.2A2 2 0 013 12V5a2 2 0 012-2h7a2 2 0 011.4.6l7.2 7.2a2 2 0 010 2.6z"/><circle cx="7.5" cy="7.5" r="1.4"/></svg>
+          <span>Categorías</span>
+        </a>
+        <a class="nav-item" href="#/proveedores" data-route="proveedores">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4h14v11H1z"/><path d="M15 8h4l3 3v4h-7z"/><circle cx="5.5" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/></svg>
+          <span>Proveedores</span>
+        </a>
+
+        <p class="nav-label">Análisis</p>
+        <a class="nav-item" href="#/reportes" data-route="reportes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+          <span>Reportes</span>
+        </a>
+        <a class="nav-item" href="#/configuracion" data-route="configuracion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+          <span>Configuración</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-foot">
+        <div class="alert-card" id="sidebarAlert" hidden>
+          <span class="alert-dot"></span>
+          <div>
+            <strong id="sidebarAlertTitle">—</strong>
+            <small id="sidebarAlertText">—</small>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="btnQuickAdd" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Registrar movimiento
+        </button>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
+
+    <!-- ===================== CONTENIDO ===================== -->
+    <div class="content">
+      <header class="topbar">
+        <button class="icon-btn only-mobile" id="btnMenu" type="button" aria-label="Abrir menú">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+
+        <div class="page-title">
+          <h1 id="pageTitle">Panel</h1>
+          <p id="pageSubtitle">Resumen general del inventario</p>
+        </div>
+
+        <div class="topbar-actions">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input id="globalSearch" type="search" placeholder="Buscar producto o SKU…" autocomplete="off" aria-label="Buscar en el inventario">
+            <kbd>/</kbd>
+          </div>
+          <button class="icon-btn" id="btnTheme" type="button" title="Cambiar tema (claro / oscuro)" aria-label="Cambiar tema">
+            <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+            <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="view" id="view" tabindex="-1"></main>
+
+      <footer class="app-footer">
+        <span>InventarioPro · demo local: los datos se guardan en tu navegador (localStorage).</span>
+        <span id="footerVersion"></span>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ===================== Acciones rápidas en móvil (FAB) ================= -->
+  <button type="button" class="fab only-mobile" id="btnFab" aria-label="Acciones rápidas" aria-haspopup="menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <!-- ===================== Aviso de instalación (PWA) ====================== -->
+  <div class="install-banner" id="installBanner" hidden>
+    <span class="install-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+    </span>
+    <div class="grow">
+      <strong id="installTitulo">Instala la aplicación</strong>
+      <small id="installTexto">Añádela a tu pantalla de inicio para usarla como app y proteger tus datos.</small>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" id="installAceptar">Instalar</button>
+    <button type="button" class="icon-btn is-sm" id="installCerrar" aria-label="Descartar aviso">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <div id="modalRoot"></div>
+
+  <script src="assets/js/utils.js"></script>
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/charts.js"></script>
+  <script src="assets/js/views/dashboard.js"></script>
+  <script src="assets/js/views/productos.js"></script>
+  <script src="assets/js/views/movimientos.js"></script>
+  <script src="assets/js/views/categorias.js"></script>
+  <script src="assets/js/views/proveedores.js"></script>
+  <script src="assets/js/views/reportes.js"></script>
+  <script src="assets/js/views/configuracion.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
