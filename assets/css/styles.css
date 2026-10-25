@@ -724,6 +724,8 @@ table.tbl { font-size: 13.5px; }
 .sheet-ico.info { background: var(--info-soft); color: var(--info); }
 
 /* Aviso de instalación */
+/* El atributo hidden debe ganar siempre a cualquier display definido en el CSS */
+[hidden] { display: none !important; }
 .install-banner {
   position: fixed;
   left: 50%; transform: translateX(-50%);

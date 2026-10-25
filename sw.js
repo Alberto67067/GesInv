@@ -6,7 +6,7 @@
    ========================================================================= */
 'use strict';
 
-var VERSION = '1.0.1';
+var VERSION = '1.0.2';
 var CACHE = 'inventariopro-' + VERSION;
 
 /* Base del despliegue (soporta subcarpetas tipo /mi-repo/ en GitHub Pages). */
